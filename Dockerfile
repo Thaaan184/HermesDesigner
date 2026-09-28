@@ -24,7 +24,7 @@ RUN cd ws-relay && npm install --omit=dev 2>/dev/null || true
 
 # Copy MCP server
 COPY mcp-server ./mcp-server
-COPY --from=builder /app/mcp-server/node_modules ./mcp-server/node_modules
+RUN cd mcp-server && npm install --omit=dev
 
 # Copy entrypoint
 COPY docker-entrypoint.sh ./
