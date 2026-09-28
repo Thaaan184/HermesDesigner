@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Menubar } from '../components/menubar/Menubar';
 import { Toolbar } from '../components/toolbar/Toolbar';
 import { CanvasViewport } from '../components/canvas/CanvasViewport';
@@ -11,17 +11,18 @@ import { NewProjectModal } from '../components/modals/NewProjectModal';
 import { useUIStore } from '../store/ui-store';
 import { useDocumentStore } from '../store/document-store';
 import { matchShortcut } from '../engine/shortcuts';
+import Konva from 'konva';
 
 export const App: React.FC = () => {
   const { showAIPanel } = useUIStore();
   const { getDocument, undo, redo, deleteSelected, duplicateSelected, copySelected, paste } = useDocumentStore();
   const doc = getDocument();
   const [showNewProject, setShowNewProject] = useState(!doc);
+  const stageRef = useRef<Konva.Stage | null>(null);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Don't fire when typing in input/textarea
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       const action = matchShortcut(e);
@@ -51,8 +52,8 @@ export const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1e1e1e] text-[#cccccc] overflow-hidden">
-      {/* Top menubar */}
-      <Menubar />
+      {/* Top menubar - pass stageRef for export */}
+      <Menubar stageRef={stageRef} />
 
       {/* Main workspace */}
       <div className="flex flex-1 overflow-hidden">
@@ -61,28 +62,28 @@ export const App: React.FC = () => {
 
         {/* Center canvas */}
         <div className="flex flex-col flex-1 overflow-hidden">
-          <CanvasViewport />
+          <CanvasViewport stageRef={stageRef} />
           <PageTabs />
         </div>
 
         {/* Right panels */}
         <div className="w-64 bg-[#252525] border-l border-[#3a3a3a] flex flex-col overflow-hidden">
-          {/* Layers (top half) */}
+          {/* Layers */}
           <div className="h-64 border-b border-[#3a3a3a] overflow-hidden flex flex-col">
             <LayersPanel />
           </div>
-          {/* Properties (middle) */}
+          {/* Properties */}
           <div className="flex-1 overflow-y-auto border-b border-[#3a3a3a]">
             <PropertiesPanel />
           </div>
-          {/* History (bottom) */}
+          {/* History */}
           <div className="h-40 overflow-hidden flex flex-col">
             <HistoryPanel />
           </div>
         </div>
       </div>
 
-      {/* AI Panel (floating) */}
+      {/* AI Panel */}
       {showAIPanel && <AIPanel />}
 
       {/* New Project Modal */}

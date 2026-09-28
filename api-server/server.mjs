@@ -1,10 +1,11 @@
 import express from 'express';
 
 const app = express();
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '4mb' }));
 
 const NINEROUTER_URL = process.env.NINEROUTER_URL || 'http://100.96.207.8:20128';
 const MODEL = process.env.AI_MODEL || 'Hermes';
+const API_KEY = process.env.NINEROUTER_API_KEY || 'sk-hermesdesigner-vm-key-2026';
 
 app.post('/api/ai/generate', async (req, res) => {
   const { prompt } = req.body;
@@ -12,15 +13,19 @@ app.post('/api/ai/generate', async (req, res) => {
   try {
     const upstream = await fetch(`${NINEROUTER_URL}/v1/chat/completions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: 'You are a professional graphic designer. Always output ONLY valid raw JSON. No markdown, no explanation.' },
+          { role: 'system', content: 'You are a professional graphic designer. Generate ONLY valid raw JSON. No markdown code blocks, no explanation, no ``` prefix/suffix. Output must start with { and end with }.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.4,
         max_tokens: 4096,
+        stream: false,
       }),
     });
     if (!upstream.ok) {
