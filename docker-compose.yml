@@ -1,0 +1,17 @@
+services:
+  hermes-designer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hermes-designer
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "8765:8765"
+    environment:
+      - WS_PORT=8765
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
